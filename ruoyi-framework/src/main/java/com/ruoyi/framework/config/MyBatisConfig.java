@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import javax.sql.DataSource;
+
+import org.apache.ibatis.io.VFS;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,36 +39,43 @@ public class MyBatisConfig
     {
         ResourcePatternResolver resolver = (ResourcePatternResolver) new PathMatchingResourcePatternResolver();
         MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resolver);
-        typeAliasesPackage = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(typeAliasesPackage) + "/" + DEFAULT_RESOURCE_PATTERN;
+        List<String> allResult = new ArrayList<String>();
         try
         {
-            List<String> result = new ArrayList<String>();
-            Resource[] resources = resolver.getResources(typeAliasesPackage);
-            if (resources != null && resources.length > 0)
+            for (String aliasesPackage : typeAliasesPackage.split(","))
             {
-                MetadataReader metadataReader = null;
-                for (Resource resource : resources)
+                List<String> result = new ArrayList<String>();
+                aliasesPackage = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
+                        + ClassUtils.convertClassNameToResourcePath(aliasesPackage.trim()) + "/" + DEFAULT_RESOURCE_PATTERN;
+                Resource[] resources = resolver.getResources(aliasesPackage);
+                if (resources != null && resources.length > 0)
                 {
-                    if (resource.isReadable())
+                    MetadataReader metadataReader = null;
+                    for (Resource resource : resources)
                     {
-                        metadataReader = metadataReaderFactory.getMetadataReader(resource);
-                        try
+                        if (resource.isReadable())
                         {
-                            result.add(Class.forName(metadataReader.getClassMetadata().getClassName()).getPackage().getName());
-                        }
-                        catch (ClassNotFoundException e)
-                        {
-                            e.printStackTrace();
+                            metadataReader = metadataReaderFactory.getMetadataReader(resource);
+                            try
+                            {
+                                result.add(Class.forName(metadataReader.getClassMetadata().getClassName()).getPackage().getName());
+                            }
+                            catch (ClassNotFoundException e)
+                            {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
+                if (result.size() > 0)
+                {
+                    HashSet<String> hashResult = new HashSet<String>(result);
+                    allResult.addAll(hashResult);
+                }
             }
-            if (result.size() > 0)
+            if (allResult.size() > 0)
             {
-                HashSet<String> h = new HashSet<String>(result);
-                result.clear();
-                result.addAll(h);
-                typeAliasesPackage = String.join(",", (String[]) result.toArray(new String[0]));
+                typeAliasesPackage = String.join(",", (String[]) allResult.toArray(new String[0]));
             }
             else
             {
@@ -85,6 +95,7 @@ public class MyBatisConfig
         String typeAliasesPackage = env.getProperty("mybatis.typeAliasesPackage");
         String mapperLocations = env.getProperty("mybatis.mapperLocations");
         typeAliasesPackage = setTypeAliasesPackage(typeAliasesPackage);
+        VFS.addImplClass(SpringBootVFS.class);
 
         final SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
         sessionFactory.setDataSource(dataSource);
