@@ -217,6 +217,20 @@
 	            <artifactId>ruoyi-core</artifactId>
 	            <version>${ruoyi.version}</version>
 	        </dependency>
+
+			<!-- 数据处理层-->
+	        <dependency>
+	            <groupId>com.ruoyi</groupId>
+	            <artifactId>ruoyi-data</artifactId>
+	            <version>${ruoyi.version}</version>
+	        </dependency>
+
+			<!-- 自定义表单层-->
+	        <dependency>
+	            <groupId>com.ruoyi</groupId>
+	            <artifactId>ruoyi-form</artifactId>
+	            <version>${ruoyi.version}</version>
+	        </dependency>
 	        
         </dependencies>
     </dependencyManagement>
@@ -229,6 +243,8 @@
 		<module>ruoyi-generator</module>
         <module>ruoyi-common</module>
 		<module>ruoyi-core</module>
+		<module>ruoyi-data</module>
+		<module>ruoyi-form</module>
     </modules>
     <packaging>pom</packaging>
 
