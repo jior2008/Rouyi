@@ -33,14 +33,6 @@ dist/
 nbdist/
 .nb-gradle/
 
-### MySQL ###
-
-mysql8/*
-mysql8.zip
-start-mysql.bat
-
-หตร๗.txt
-
 ######################################################################
 # Others
 *.log
